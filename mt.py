@@ -2,13 +2,18 @@ import pygame,sys
 import pygame.locals
 
 pygame.init()
-joy = pygame.joystick.Joystick(0)      
+joy = pygame.joystick.Joystick(0)
 joy.init()
 
-SCREEN_SIZE = (570, 600)
+SCREEN_SIZE = (545, 450)
 
 screen = pygame.display.set_mode(SCREEN_SIZE)
 font = pygame.font.Font(None,30)
+#サイドブレーキ
+isSideBrake = True
+isAllowSideBrake = True
+
+#シフトレバー
 infoPosX = 150
 infoPosY = 300
 
@@ -17,20 +22,82 @@ shiftBasePosY = 300
 shiftDistanceX = 150 
 shiftDistanceY = 50
 
-isSideBrake = True
-isAllowSideBrake = True
 beforeInputHat = ""
-shiftPosX = shiftBasePosX + shiftDistanceX
-shiftPosY = shiftBasePosY + shiftDistanceY
+shiftPosX = shiftBasePosX + shiftDistanceX*2
+shiftPosY = shiftBasePosY + shiftDistanceY*2
 
-isStart = True 
+#エンジン
+isStart = False
 isAllowStart = True
+
+#ウインカー
+beforeLeft = 0
+beforeRight = 0
+left = 0
+right = 0
 
 while True:
   pygame.display.update()
   screen.fill((0,0,0))
 
+  #---------
+  #エンジン
+  #---------
+  if joy.get_button(7) == 1:
+    if isAllowStart and isStart == True:
+      isStart = False 
+    elif isAllowStart:
+      isStart = True
+    isAllowStart = False
+  else:
+    isAllowStart = True
 
+  if isStart: dispMessage = "ON"
+  else:  dispMessage = "OFF"
+
+  screen.blit(font.render(dispMessage, True, (200,200,200)),[250,20]) 
+
+  #-----------
+  #ウインカー
+  #-----------
+  #LEFT
+  pygame.draw.rect(screen,(100,100,100),(50,10,50,30))
+  pygame.draw.rect(screen,(0,0,0),(51,11,48,28))
+  
+  if beforeLeft != joy.get_button(4):
+    if joy.get_button(4) == 1:
+      if left == 0:
+        left = 1
+      else:
+        left = 0
+    beforeLeft = joy.get_button(4) 
+  if left == 1:
+    pygame.draw.rect(screen,(255,212,0),(51,11,48,28))
+
+  #RIGHT
+  pygame.draw.rect(screen,(100,100,100),(450,10,50,30))
+  pygame.draw.rect(screen,(0,0,0),(451,11,48,28))
+  if beforeRight != joy.get_button(5):
+    if joy.get_button(5) == 1:
+      if right == 0:
+        right = 1
+      else:
+        right = 0
+    beforeRight = joy.get_button(5) 
+
+  if right == 1:
+    pygame.draw.rect(screen,(255,212,0),(451,11,48,28))
+
+  #--------
+  #ハンドル
+  #--------
+  x0 = joy.get_axis(0)*95
+  y0 = joy.get_axis(1)*95
+
+  pygame.draw.circle(screen,(100,100,100),(225,150),100)
+  pygame.draw.circle(screen,(0,0,0),(225,150),99)
+  pygame.draw.circle(screen,(0,255,255),(225 + x0 ,150 + y0),10)
+ 
   #-----------------
   #クラッチメーター
   #-----------------
@@ -45,19 +112,16 @@ while True:
   # -1   -> 0
   # 0.99 -> 200
   clutchPower = (joy.get_axis(2)+1)*100
-  #上から延ばす
   pygame.draw.rect(screen,(0,150,0),(50,50,50,clutchPower))
-  #screen.blit(font.render('Cpower : ' + str(clutchPower) , True, (255, 255, 255)), [infoPosX, infoPosY+150]) 
 
   #-----------------
-
+  #アクセルメーター
+  #-----------------
   pygame.draw.rect(screen,(100,100,100),(450,50,50,200))
   pygame.draw.rect(screen,(0,0,0),(451,51,48,198))
 
   acceleratorPower = (joy.get_axis(5)+1)*100
-  #上から延ばす
   pygame.draw.rect(screen,(0,0,150),(450,50,50,acceleratorPower))
-  #screen.blit(font.render('Apower : ' + str(acceleratorPower) , True, (255, 255, 255)), [infoPosX, infoPosY+170]) 
 
   #-----------------
   #ブレーキメーター
@@ -66,10 +130,7 @@ while True:
   pygame.draw.rect(screen,(0,0,0),(351,51,48,98))
 
   brakePower = -joy.get_axis(4)*100 # 0 -> -1
-  #上から延ばす
-  pygame.draw.rect(screen,(150,0,0),(350,50,50,brakePower))
-  #screen.blit(font.render('brakepower : ' + str(brakePower) , True, (255, 255, 255)), [infoPosX, infoPosY+190]) 
-
+  pygame.draw.rect(screen,(150,0,0),(350,50,50,brakePower)) #上から延ばす
 
   #-----------------
   #シフトレバー(枠)
@@ -102,12 +163,10 @@ while True:
   #-----------------
   #サイドブレーキ
   #-----------------
-  #screen.blit(font.render('joy.get_button(4) : ' + str(joy.get_button(4)) , True, (255, 255, 255)), [10, 50]) 
-  pygame.draw.rect(screen,(100,100,100),(5,150,20,200))
-  pygame.draw.rect(screen,(0,0,0),(6,151,18,198))
-  #screen.blit(font.render('joy.get_button(4) : ' + str(joy.get_button(4)) , True, (255, 255, 255)), [10, 50]) 
+  pygame.draw.rect(screen,(100,100,100),(50,300,30,100))
+  pygame.draw.rect(screen,(0,0,0),(51,301,28,98))
 
-  if joy.get_button(4) == 1:
+  if joy.get_button(6) == 1:
     if isAllowSideBrake and isSideBrake == False:
       isSideBrake = True
     elif isAllowSideBrake:
@@ -118,31 +177,7 @@ while True:
     isAllowSideBrake = True
 
   if isSideBrake:
-    pygame.draw.rect(screen,(150,100,100),(6,151,18,198))
-
-  #screen.blit(font.render('isAllowSideBrake : ' + str(isAllowSideBrake) , True, (255, 255, 255)), [10, 50]) 
-  #screen.blit(font.render('isSideBrake : ' + str(isSideBrake) , True, (255, 255, 255)), [10, 70]) 
-
-  #---------
-  #エンジン
-  #---------
-  if joy.get_button(7) == 1:
-    if isAllowStart and isStart == True:
-      isStart = False 
-    elif isAllowStart:
-      isStart = True
-    isAllowStart = False
-
-  else:
-    isAllowStart = True
-
-  if isStart:
-    dispMessage = "ON"
-  else:
-    dispMessage = "OFF"
-
-  screen.blit(font.render(dispMessage, True, (200,200,200)),[150,50]) 
-
+    pygame.draw.rect(screen,(150,100,100),(51,301,28,98))
  
   #キー入力処理
   for event in pygame.event.get():
