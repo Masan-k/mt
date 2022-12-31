@@ -12,6 +12,7 @@ class Mt:
   TIRE_INIT_POS_X_L = 150
   TIRE_INIT_POS_X_R = 300 
   TIRE_INIT_POS_Y = 100 
+  TIRE_DISTANCE = 100
 
   def init(self):
     #シフトレバー
@@ -67,18 +68,16 @@ class Mt:
       #アナログスティック
       x0 = joy.get_axis(0) # min:-1.0 ~ max:0.9
       y0 = joy.get_axis(1)
-      pygame.draw.circle(screen,(100,100,100),(225,200),50)
-      pygame.draw.circle(screen,(0,0,0),(225,200),49)
-      pygame.draw.circle(screen,(0,255,255),(225 + x0*50 ,200 + y0*50),5)
-      screen.blit(font.render("x0 -> " + str(x0), True, (200,200,200)),(520,10)) 
+      pygame.draw.circle(screen,(150,150,255),(225 + x0*10 ,self.TIRE_INIT_POS_Y + y0*10),5)
+      pygame.draw.line(screen, (200,200,200),(225,self.TIRE_INIT_POS_Y)
+                                            ,(225,self.TIRE_INIT_POS_Y+self.TIRE_DISTANCE),width=3)
+
 
       self.angle = 90 - joy.get_axis(0) * 40 
-      screen.blit(font.render("angle -> " + str(self.angle), True, (200,200,200)),(520,100)) 
+      screen.blit(font.render("angle -> " + str(self.angle), True, (200,200,200)),(520,10)) 
 
       x = math.cos(math.radians(self.angle))*(self.TIRE_HEIGHT/2)
-      screen.blit(font.render("x -> " + str(x), True, (200,200,200)),(520,130)) 
       y = math.sin(math.radians(self.angle))*(self.TIRE_HEIGHT/2)
-      screen.blit(font.render("y -> " + str(y), True, (200,200,200)),(520,150)) 
 
       #タイヤの向き
       pygame.draw.rect(screen,(200,200,200),(self.TIRE_INIT_POS_X_L, self.TIRE_INIT_POS_Y,150,2))
@@ -93,7 +92,14 @@ class Mt:
       pygame.draw.line(screen, (150,150,255),(self.TIRE_INIT_POS_X_R,self.TIRE_INIT_POS_Y)
                                             ,(self.TIRE_INIT_POS_X_R - x ,self.TIRE_INIT_POS_Y + y),width=3)
 
-      #---------
+      #タイヤの向き
+      pygame.draw.rect(screen,(200,200,200),(self.TIRE_INIT_POS_X_L, self.TIRE_INIT_POS_Y+self.TIRE_DISTANCE,150,2))
+      pygame.draw.line(screen, (200,200,200),(self.TIRE_INIT_POS_X_L, self.TIRE_INIT_POS_Y-self.TIRE_HEIGHT/2+self.TIRE_DISTANCE)
+                                            ,(self.TIRE_INIT_POS_X_L ,self.TIRE_INIT_POS_Y+self.TIRE_HEIGHT/2+self.TIRE_DISTANCE),width=3)
+      pygame.draw.line(screen, (200,200,200),(self.TIRE_INIT_POS_X_R, self.TIRE_INIT_POS_Y-self.TIRE_HEIGHT/2+self.TIRE_DISTANCE)
+                                            ,(self.TIRE_INIT_POS_X_R ,self.TIRE_INIT_POS_Y+self.TIRE_HEIGHT/2+self.TIRE_DISTANCE),width=3)
+  
+       #---------
       #エンジン
       #---------
       if joy.get_button(7) == 1:
