@@ -8,6 +8,11 @@ class Mt:
   SHIFT_DISTANCE_X = 150 
   SHIFT_DISTANCE_Y = 50
 
+  TIRE_HEIGHT = 40
+  TIRE_INIT_POS_X_L = 150
+  TIRE_INIT_POS_X_R = 300 
+  TIRE_INIT_POS_Y = 100 
+
   def init(self):
     #シフトレバー
     self.beforeInputHat = ""
@@ -27,12 +32,12 @@ class Mt:
     self.right = 0
 
     #ハンドル
-    self.beforePosX = -1
-    self.beforePosY = -1
+    self.beforePosX = None 
+    self.beforePosY = None 
     self.beforeDistance = None 
     self.distanceX = None
     self.beforeDistanceX = None 
-    self.angle = 0
+    self.angle = 90 
 
     self.shiftPosX = self.SHIFT_BASE_POS_X + self.SHIFT_DISTANCE_X*2
     self.shiftPosY = self.SHIFT_BASE_POS_Y + self.SHIFT_DISTANCE_Y*2
@@ -60,44 +65,33 @@ class Mt:
       #ハンドル
       #------------
       #アナログスティック
-      x0 = joy.get_axis(0)*50
-      y0 = joy.get_axis(1)*50
+      x0 = joy.get_axis(0) # min:-1.0 ~ max:0.9
+      y0 = joy.get_axis(1)
       pygame.draw.circle(screen,(100,100,100),(225,200),50)
       pygame.draw.circle(screen,(0,0,0),(225,200),49)
-      pygame.draw.circle(screen,(0,255,255),(225 + x0 ,200 + y0),5)
+      pygame.draw.circle(screen,(0,255,255),(225 + x0*50 ,200 + y0*50),5)
+      screen.blit(font.render("x0 -> " + str(x0), True, (200,200,200)),(520,10)) 
 
-      distance = distance_2points(self.beforePosX, self.beforePosY, joy.get_axis(0), joy.get_axis(1))
-
-      screen.blit(font.render("x0 -> " + str(joy.get_axis(0)), True, (200,200,200)),(520,10)) 
-      screen.blit(font.render("beforePosX -> " + str(self.beforePosX), True, (200,200,200)),(520,30)) 
-
-      if distance == 0:
-        screen.blit(font.render("beforeDistance -> " + str(self.beforeDistance), True, (200,200,200)),(520,70)) 
-      else:
-        screen.blit(font.render("distance -> " + str(distance), True, (200,200,200)),(520,70)) 
-        self.beforeDistance = distance
-
-        distanceX = joy.get_axis(0) - self.beforePosX
-        if distanceX > 0:
-          self.angle = self.angle + distance
-        else:
-          self.angle = self.angle - distance
-
-      if distanceX != 0:
-        self.beforeDistanceX = distanceX 
-        screen.blit(font.render("distanceX -> " + str(distance), True, (200,200,200)),(520,50)) 
-      else:
-        screen.blit(font.render("beforeDistanceX -> " + str(self.beforeDistanceX), True, (200,200,200)),(520,50)) 
-
+      self.angle = 90 - joy.get_axis(0) * 40 
       screen.blit(font.render("angle -> " + str(self.angle), True, (200,200,200)),(520,100)) 
-     
-      #タイヤの向き
-      pygame.draw.rect(screen,(200,200,200),(150,100,150,2))
-      pygame.draw.line(screen, (150,150,255),(150,80),(150,120),width=3)
-      pygame.draw.line(screen, (150,150,255),(300,80),(300,120),width=3)
 
-      beforePosX = joy.get_axis(0)
-      beforePosY = joy.get_axis(1)
+      x = math.cos(math.radians(self.angle))*(self.TIRE_HEIGHT/2)
+      screen.blit(font.render("x -> " + str(x), True, (200,200,200)),(520,130)) 
+      y = math.sin(math.radians(self.angle))*(self.TIRE_HEIGHT/2)
+      screen.blit(font.render("y -> " + str(y), True, (200,200,200)),(520,150)) 
+
+      #タイヤの向き
+      pygame.draw.rect(screen,(200,200,200),(self.TIRE_INIT_POS_X_L, self.TIRE_INIT_POS_Y,150,2))
+      #left
+      pygame.draw.line(screen, (150,150,255),(self.TIRE_INIT_POS_X_L,self.TIRE_INIT_POS_Y)
+                                            ,(self.TIRE_INIT_POS_X_L + x ,self.TIRE_INIT_POS_Y - y),width=3)
+      pygame.draw.line(screen, (150,150,255),(self.TIRE_INIT_POS_X_L,self.TIRE_INIT_POS_Y)
+                                            ,(self.TIRE_INIT_POS_X_L - x ,self.TIRE_INIT_POS_Y + y),width=3)
+      #right
+      pygame.draw.line(screen, (150,150,255),(self.TIRE_INIT_POS_X_R,self.TIRE_INIT_POS_Y)
+                                            ,(self.TIRE_INIT_POS_X_R + x ,self.TIRE_INIT_POS_Y - y),width=3)
+      pygame.draw.line(screen, (150,150,255),(self.TIRE_INIT_POS_X_R,self.TIRE_INIT_POS_Y)
+                                            ,(self.TIRE_INIT_POS_X_R - x ,self.TIRE_INIT_POS_Y + y),width=3)
 
       #---------
       #エンジン
@@ -235,6 +229,7 @@ class Mt:
           if event.key == pygame.locals.K_ESCAPE:
             pygame.quit()
             sys.exit()
+
 mt = Mt()
 mt.init()
 mt.main()
