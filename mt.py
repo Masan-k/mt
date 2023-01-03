@@ -20,10 +20,12 @@ class Mt:
 
   def init(self):
     self.rpm = 0
+    self.initRpm = 0
     self.speed = 0
 
     self.isJoin = False 
     self.joinCount = 0
+    self.status = 'none'
 
     #シフトレバー
     self.beforeInputHat = ""
@@ -36,7 +38,7 @@ class Mt:
 
     #エンジン
     self.isStart = False
-    self.isAllowStart = True
+    self.isAllowStart = None 
 
     #サイドブレーキ
     self.isSideBrake = True
@@ -113,14 +115,19 @@ class Mt:
       #エンジン
       #---------
       if joy.get_button(7) == 1:
-        if self.isAllowStart and self.isStart == True:
-          self.isStart = False 
+        if self.isAllowStart == False and self.isStart == False:
+          self.isStart = True
+        elif self.isAllowStart == False and self.isStart:
           self.init()
-      elif self.isAllowStart:
-        self.isStart = True
-        self.isAllowStart = False
-      else:
+
+      if joy.get_button(7) == 1:
         self.isAllowStart = True
+      else:
+        self.isAllowStart = False 
+
+      #screen.blit(font.render('isStart : ' + str(self.isStart), True, (200,200,200)),(680,300)) 
+      #screen.blit(font.render('isAllowStart : ' + str(self.isAllowStart), True, (200,200,200)),(680,320)) 
+      
 
       if self.isStart: dispMessage = "ON"
       else:  dispMessage = "OFF"
@@ -262,7 +269,10 @@ class Mt:
       #---------
       #速度制御
       #---------
-      self.rpm = acceleratorPower 
+      if self.isStart:
+        if self.rpm < 20:
+          self.initRpm = self.initRpm + 0.2
+        self.rpm = acceleratorPower + self.initRpm
 
       #clutchPower 0 ~ 1.99
       #クラッチ40~60％かつアクセルを踏んでいる時に半クラッチ状態にする
@@ -270,7 +280,8 @@ class Mt:
       #クラッチ60%まではスピードは変わらない(100~60)...seed + 0 
       #クラッチ0だったらアクセル(100%)をスピードに伝える...
 
-      if clutchPower >= 40 and  clutchPower <= 60 and acceleratorPower > 0 and self.gear == 1 and self.isJoin == False:
+      if self.isStart and clutchPower >= 40 and  clutchPower <= 60 and acceleratorPower > 0 and self.gear == 1 and self.isJoin == False:
+        self.status = "harf clutch"
         self.speed = self.speed + getSpeed(acceleratorPower,clutchPower,self.gear)
 
         if self.speed > 20:
@@ -281,8 +292,13 @@ class Mt:
           self.isJoin = True
 
       elif self.isJoin == True and acceleratorPower > 0 :
+        self.status = "on join and accele on"
         if self.gear != 0 and self.gear != 9:
-          self.speed = self.speed + getSpeed(acceleratorPower,clutchPower,self.gear)
+          if self.speed <= self.speed + getSpeed(acceleratorPower,clutchPower,self.gear):
+            self.speed = self.speed + getSpeed(acceleratorPower,clutchPower,self.gear)
+          else:
+            if self.speed > 0:
+              self.speed = self.speed - 0.01 
 
         if self.gear == 1 and self.speed > 20:
           self.speed = 20
@@ -296,10 +312,13 @@ class Mt:
           self.speed = 100
 
       elif self.isJoin == True and clutchPower == 0 and self.speed == 0:
+        self.status = "off join"
+
         self.isJoin = False
         self.joinCount = 0
 
       else:
+        self.status = "else"
         if self.speed > 0:
           self.speed = self.speed - 0.01 
           if self.speed < 0:
@@ -310,12 +329,11 @@ class Mt:
           if self.joinCount < 0:
             self.joinCount = 0
 
-      screen.blit(font.render('speed : ' + str(self.speed), True, (200,200,200)),(570,260)) 
-      screen.blit(font.render('rpm : ' + str(self.rpm), True, (200,200,200)),(570,285)) 
       screen.blit(font.render('gear : ' + str(self.gear), True, (200,200,200)),(570,310))
 
       screen.blit(font.render('joinCount : ' + str(self.joinCount), True, (200,200,200)),(570,350))
       screen.blit(font.render('isJoin : ' + str(self.isJoin), True, (200,200,200)),(570,375))
+      #screen.blit(font.render('status : ' + str(self.status), True, (200,200,200)),(570,395))
       #screen.blit(font.render("tire angle -> " + str(self.angle), True, (200,200,200)),(520,150)) 
       #screen.blit(font.render('clutchPower : ' + str(clutchPower), True, (200,200,200)),(520,90))
 
@@ -357,6 +375,9 @@ class Mt:
         pygame.draw.line(screen, (200,200,200),self.TAKO_L,(self.TAKO_L[0]-x,self.TAKO_L[1]+y),width=1)
         pygame.draw.line(screen, (200,200,200),self.TAKO_R,(self.TAKO_R[0]-x,self.TAKO_R[1]+y),width=1)
 
+      #--------------------
+      #速度・RPMの針の描画
+      #--------------------
       pygame.draw.circle(screen,(0,0,0),self.TAKO_L, self.TAKO_RADIUS-8)
       pygame.draw.circle(screen,(0,0,0),self.TAKO_R, self.TAKO_RADIUS-8)
 
@@ -374,13 +395,29 @@ class Mt:
         y = math.sin(math.radians(90-self.speed*3)) * self.TAKO_RADIUS
         pygame.draw.line(screen, (200,200,200),self.TAKO_R,(self.TAKO_R[0]-x,self.TAKO_R[1]+y),width=3)
       else:
-        x = math.cos(math.radians(90-self.rpm*3)) * self.TAKO_RADIUS
-        y = math.sin(math.radians(90-self.rpm*3)) * self.TAKO_RADIUS
+        x = math.cos(math.radians(90-self.speed*3)) * self.TAKO_RADIUS
+        y = math.sin(math.radians(90-self.speed*3)) * self.TAKO_RADIUS
         pygame.draw.line(screen, (200,200,200),self.TAKO_R,(self.TAKO_R[0]-x,self.TAKO_R[1]+y),width=3)
 
   
+      #--------
+      #数値表示
+      #--------
+      if self.speed < 10:
+        screen.blit(font.render(str(int(self.speed)), True, (200,200,200)),(self.TAKO_R[0]-5,self.TAKO_R[1]-30))
+      elif self.speed < 100:
+        screen.blit(font.render(str(int(self.speed)), True, (200,200,200)),(self.TAKO_R[0]-10,self.TAKO_R[1]-30))
+      else:
+        screen.blit(font.render(str(int(self.speed)), True, (200,200,200)),(self.TAKO_R[0]-15,self.TAKO_R[1]-30))
 
-         
+      '''
+      if self.rpm < 10:
+        screen.blit(font.render(str(int(self.rpm)), True, (200,200,200)),(self.TAKO_L[0]-5,self.TAKO_L[1]-30)) 
+      elif self.rpm < 100:
+        screen.blit(font.render(str(int(self.rpm)), True, (200,200,200)),(self.TAKO_L[0]-10,self.TAKO_L[1]-30)) 
+      else:
+        screen.blit(font.render(str(int(self.rpm)), True, (200,200,200)),(self.TAKO_L[0]-15,self.TAKO_L[1]-30)) 
+      '''
 
       #キー入力処理
       for event in pygame.event.get():
