@@ -405,6 +405,15 @@ class Mt:
         y = math.sin(math.radians(90-self.speed*3)) * self.TAKO_RADIUS
         pygame.draw.line(screen, (200,200,200),self.TAKO_R,(self.TAKO_R[0]-x,self.TAKO_R[1]+y),width=3)
 
+      #--------
+      #ブレーキ
+      #--------
+      #0~100
+      if brakePower > 0.5 or self.speed > 0:
+        self.speed = self.speed - brakePower/1000
+
+      if self.speed < 0:
+        self.speed = 0
   
       #--------
       #数値表示
