@@ -293,23 +293,29 @@ class Mt:
 
       elif self.isJoin == True and acceleratorPower > 0 :
         self.status = "on join and accele on"
-        if self.gear != 0 and self.gear != 9:
-          if self.speed <= self.speed + getSpeed(acceleratorPower,clutchPower,self.gear):
-            self.speed = self.speed + getSpeed(acceleratorPower,clutchPower,self.gear)
-          else:
-            if self.speed > 0:
-              self.speed = self.speed - 0.01 
 
         if self.gear == 1 and self.speed > 20:
-          self.speed = 20
+          self.speed = self.speed - 0.01
         elif self.gear == 2 and self.speed > 40:
-          self.speed = 40
+          self.speed = self.speed - 0.01
+          #self.speed = 40
         elif self.gear == 3 and self.speed > 60:
-          self.speed = 60
+          self.speed = self.speed - 0.01
+          #self.speed = 60
         elif self.gear == 4 and self.speed > 80:
-          self.speed = 80
+          self.speed = self.speed - 0.01
+          #self.speed = 80
         elif self.gear == 5 and self.speed > 100:
-          self.speed = 100
+          self.speed = self.speed - 0.01
+          #self.speed = 100
+        else:
+
+          if self.gear != 0 and self.gear != 9:
+            if self.speed <= self.speed + getSpeed(acceleratorPower,clutchPower,self.gear)*0.5:
+              self.speed = self.speed + getSpeed(acceleratorPower,clutchPower,self.gear)*0.5
+            else:
+              if self.speed > 0:
+                self.speed = self.speed - 0.01 
 
       elif self.isJoin == True and clutchPower == 0 and self.speed == 0:
         self.status = "off join"
