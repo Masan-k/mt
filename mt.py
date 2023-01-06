@@ -23,6 +23,10 @@ class Mt:
     self.initRpm = 0
     self.speed = 0
 
+    self.carPosX = 500
+    self.carPosY = 500
+    self.carAngle = 0
+
     self.isJoin = False 
     self.joinCount = 0
     self.status = 'none'
@@ -67,7 +71,7 @@ class Mt:
     joy.init()
 
     #SCREEN_SIZE = (545, 450) #
-    SCREEN_SIZE = (945, 450)
+    SCREEN_SIZE = (945, 650)
 
     screen = pygame.display.set_mode(SCREEN_SIZE)
     font = pygame.font.Font(None,30)
@@ -84,7 +88,7 @@ class Mt:
       y0 = joy.get_axis(1)
       pygame.draw.circle(screen,(150,150,255),(225 + x0*10 ,self.TIRE_INIT_POS_Y + y0*10),5)
       pygame.draw.line(screen, (200,200,200),(225,self.TIRE_INIT_POS_Y)
-                                            ,(225,self.TIRE_INIT_POS_Y+self.TIRE_DISTANCE),width=3)
+                                            ,(225,self.TIRE_INIT_POS_Y+self.TIRE_DISTANCE),width=1)
 
       self.angle = 90 - joy.get_axis(0) * 40 
 
@@ -92,24 +96,24 @@ class Mt:
       y = math.sin(math.radians(self.angle))*(self.TIRE_HEIGHT/2)
 
       #タイヤの向き
-      pygame.draw.rect(screen,(200,200,200),(self.TIRE_INIT_POS_X_L, self.TIRE_INIT_POS_Y,150,2))
+      pygame.draw.rect(screen,(200,200,200),(self.TIRE_INIT_POS_X_L, self.TIRE_INIT_POS_Y,150,1))
       #left
       pygame.draw.line(screen, (150,150,255),(self.TIRE_INIT_POS_X_L,self.TIRE_INIT_POS_Y)
-                                            ,(self.TIRE_INIT_POS_X_L + x ,self.TIRE_INIT_POS_Y - y),width=3)
+                                            ,(self.TIRE_INIT_POS_X_L + x ,self.TIRE_INIT_POS_Y - y),width=1)
       pygame.draw.line(screen, (150,150,255),(self.TIRE_INIT_POS_X_L,self.TIRE_INIT_POS_Y)
-                                            ,(self.TIRE_INIT_POS_X_L - x ,self.TIRE_INIT_POS_Y + y),width=3)
+                                            ,(self.TIRE_INIT_POS_X_L - x ,self.TIRE_INIT_POS_Y + y),width=1)
       #right
       pygame.draw.line(screen, (150,150,255),(self.TIRE_INIT_POS_X_R,self.TIRE_INIT_POS_Y)
-                                            ,(self.TIRE_INIT_POS_X_R + x ,self.TIRE_INIT_POS_Y - y),width=3)
+                                            ,(self.TIRE_INIT_POS_X_R + x ,self.TIRE_INIT_POS_Y - y),width=1)
       pygame.draw.line(screen, (150,150,255),(self.TIRE_INIT_POS_X_R,self.TIRE_INIT_POS_Y)
-                                            ,(self.TIRE_INIT_POS_X_R - x ,self.TIRE_INIT_POS_Y + y),width=3)
+                                            ,(self.TIRE_INIT_POS_X_R - x ,self.TIRE_INIT_POS_Y + y),width=1)
 
       #タイヤの向き
-      pygame.draw.rect(screen,(200,200,200),(self.TIRE_INIT_POS_X_L, self.TIRE_INIT_POS_Y+self.TIRE_DISTANCE,150,2))
+      pygame.draw.rect(screen,(200,200,200),(self.TIRE_INIT_POS_X_L, self.TIRE_INIT_POS_Y+self.TIRE_DISTANCE,150,1))
       pygame.draw.line(screen, (200,200,200),(self.TIRE_INIT_POS_X_L, self.TIRE_INIT_POS_Y-self.TIRE_HEIGHT/2+self.TIRE_DISTANCE)
-                                            ,(self.TIRE_INIT_POS_X_L ,self.TIRE_INIT_POS_Y+self.TIRE_HEIGHT/2+self.TIRE_DISTANCE),width=3)
+                                            ,(self.TIRE_INIT_POS_X_L ,self.TIRE_INIT_POS_Y+self.TIRE_HEIGHT/2+self.TIRE_DISTANCE),width=1)
       pygame.draw.line(screen, (200,200,200),(self.TIRE_INIT_POS_X_R, self.TIRE_INIT_POS_Y-self.TIRE_HEIGHT/2+self.TIRE_DISTANCE)
-                                            ,(self.TIRE_INIT_POS_X_R ,self.TIRE_INIT_POS_Y+self.TIRE_HEIGHT/2+self.TIRE_DISTANCE),width=3)
+                                            ,(self.TIRE_INIT_POS_X_R ,self.TIRE_INIT_POS_Y+self.TIRE_HEIGHT/2+self.TIRE_DISTANCE),width=1)
   
       #---------
       #エンジン
@@ -317,28 +321,23 @@ class Mt:
               if self.speed > 0:
                 self.speed = self.speed - 0.01 
 
-      elif self.isJoin == True and clutchPower == 0 and self.speed == 0:
-        self.status = "off join"
-
-        self.isJoin = False
-        self.joinCount = 0
-
       else:
         self.status = "else"
-        if self.speed > 0:
+        if self.speed >= 0:
           self.speed = self.speed - 0.01 
           if self.speed < 0:
             self.speed = 0
-        
+            self.isJoin = False
+            self.joinCount = 0
+
         if self.isJoin == False:
           self.joinCount = self.joinCount - 1
           if self.joinCount < 0:
             self.joinCount = 0
 
-      screen.blit(font.render('gear : ' + str(self.gear), True, (200,200,200)),(570,310))
-
-      screen.blit(font.render('joinCount : ' + str(self.joinCount), True, (200,200,200)),(570,350))
-      screen.blit(font.render('isJoin : ' + str(self.isJoin), True, (200,200,200)),(570,375))
+      screen.blit(font.render('GEAR : ' + str(self.gear), True, (200,200,200)),(50,440))
+      screen.blit(font.render('JOIN COUNT : ' + str(self.joinCount), True, (200,200,200)),(50,480))
+      screen.blit(font.render('IS JOIN : ' + str(self.isJoin), True, (200,200,200)),(50,520))
       #screen.blit(font.render('status : ' + str(self.status), True, (200,200,200)),(570,395))
       #screen.blit(font.render("tire angle -> " + str(self.angle), True, (200,200,200)),(520,150)) 
       #screen.blit(font.render('clutchPower : ' + str(clutchPower), True, (200,200,200)),(520,90))
@@ -425,14 +424,35 @@ class Mt:
       else:
         screen.blit(font.render(str(int(self.speed)), True, (200,200,200)),(self.TAKO_R[0]-15,self.TAKO_R[1]-30))
 
-      '''
-      if self.rpm < 10:
-        screen.blit(font.render(str(int(self.rpm)), True, (200,200,200)),(self.TAKO_L[0]-5,self.TAKO_L[1]-30)) 
-      elif self.rpm < 100:
-        screen.blit(font.render(str(int(self.rpm)), True, (200,200,200)),(self.TAKO_L[0]-10,self.TAKO_L[1]-30)) 
-      else:
-        screen.blit(font.render(str(int(self.rpm)), True, (200,200,200)),(self.TAKO_L[0]-15,self.TAKO_L[1]-30)) 
-      '''
+      #-----------------------
+      #走行オブジェクトの描画
+      #-----------------------
+      #コースの描画
+      pygame.draw.circle(screen,(0,255,200),(600,400),80)
+      pygame.draw.circle(screen,(0,0,0),(600,400),79)
+      pygame.draw.circle(screen,(0,255,200),(800,400),80)
+      pygame.draw.circle(screen,(0,0,0),(800,400),79)
+      pygame.draw.rect(screen,(0,255,200),(600,320,200,160))
+      pygame.draw.rect(screen,(0,0,0),(600,321,200,158))
+
+      #走行オブジェクトの描画
+      pygame.draw.circle(screen,(150,150,255),(self.carPosX,self.carPosY),7)
+
+      if  joy.get_axis(0) > 0.03 or joy.get_axis(0) < -0.03 :
+        if self.speed > 0:
+          self.carAngle = self.carAngle + joy.get_axis(0) * self.speed/10 
+      x = math.cos(math.radians(self.carAngle)) 
+      y = math.sin(math.radians(self.carAngle)) 
+
+      pygame.draw.line(screen, (150,150,255),(self.carPosX,self.carPosY),(self.carPosX+x*25,self.carPosY+y*25),width=2)
+
+      self.carPosX = self.carPosX + x*self.speed/20
+      self.carPosY = self.carPosY + y*self.speed/20
+
+      screen.blit(font.render('joy.get_axis(0) : ' + str(joy.get_axis(0)), True, (200,200,200)),(50,550))
+      screen.blit(font.render('self.carPosX : ' + str(self.carPosX), True, (200,200,200)),(50,570))
+      screen.blit(font.render('self.carPosY : ' + str(self.carPosY), True, (200,200,200)),(50,590))
+      screen.blit(font.render('self.carAngle : ' + str(self.carAngle), True, (200,200,200)),(50,610))
 
       #キー入力処理
       for event in pygame.event.get():
