@@ -23,8 +23,8 @@ class Mt:
     self.initRpm = 0
     self.speed = 0
 
-    self.carPosX = 500
-    self.carPosY = 500
+    self.carPosX = 600
+    self.carPosY = 250
     self.carAngle = 0
 
     self.isJoin = False 
